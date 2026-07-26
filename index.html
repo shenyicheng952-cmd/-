@@ -11,6 +11,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      document.addEventListener('gesturestart', e => e.preventDefault());
+      document.addEventListener('gesturechange', e => e.preventDefault());
+      document.addEventListener('gestureend', e => e.preventDefault());
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

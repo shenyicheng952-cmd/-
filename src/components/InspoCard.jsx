@@ -1,4 +1,4 @@
-import { Check, ExternalLink, Trash2 } from 'lucide-react'
+import { Check, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 import { formatDueDate, getDueGroup } from '../lib/dates'
 
 const SOURCES = {
@@ -16,7 +16,7 @@ export default function InspoCard({ task, onToggle, onDelete, onEdit }) {
   return (
     <article
       onClick={() => onEdit(task)}
-      className={`group flex gap-3.5 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_1px_5px_rgba(15,23,42,.04)] transition ${done ? 'opacity-50' : 'active:scale-[.985]'}`}
+      className={`group flex cursor-pointer gap-3.5 rounded-2xl border border-slate-100 bg-white p-4 shadow-[0_1px_5px_rgba(15,23,42,.04)] transition ${done ? 'opacity-50' : 'active:scale-[.985]'}`}
     >
       <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${source.iconClass}`}>{source.icon}</div>
       <div className="min-w-0 flex-1">
@@ -37,6 +37,17 @@ export default function InspoCard({ task, onToggle, onDelete, onEdit }) {
           <p className={`min-w-0 flex-1 text-[15px] font-semibold leading-[1.45] ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
             {task.content}
           </p>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onEdit(task)
+            }}
+            className="rounded-lg p-1 text-violet-400 transition hover:bg-violet-50 hover:text-violet-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-100"
+            aria-label="编辑灵感"
+          >
+            <Pencil size={16} />
+          </button>
           <button
             type="button"
             onClick={(event) => {

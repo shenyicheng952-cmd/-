@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Plan & Write — Apple Clean</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #f2f2f7;
+    color: #1c1c1e;
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  .header {
+    padding: 60px 20px 20px;
+    background: #f2f2f7;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .date { font-size: 15px; color: #8e8e93; margin-top: 4px; }
+  
+  .section { padding: 0 20px 12px; }
+  .section h2 { font-size: 20px; font-weight: 600; margin-bottom: 12px; color: #1c1c1e; }
+  
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+    transition: all 0.15s;
+  }
+  .card:active { transform: scale(0.985); background: #f9f9fb; }
+  .card .idea { font-size: 16px; font-weight: 500; line-height: 1.4; margin-bottom: 8px; }
+  .card .meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8e8e93; flex-wrap: wrap; }
+  
+  .source-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  }
+  .source-tag.wechat { background: #e8f5e9; color: #2e7d32; }
+  .source-tag.douyin { background: #fce4ec; color: #c62828; }
+  .source-tag.xhs { background: #fff3e0; color: #e65100; }
+  .source-tag.web { background: #e3f2fd; color: #1565c0; }
+  
+  .ddl-badge { color: #ff3b30; font-weight: 600; font-size: 12px; }
+  .ddl-warn { color: #ff9500; font-weight: 600; font-size: 12px; }
+  .done .idea { text-decoration: line-through; color: #aeaeb2; }
+  .done { opacity: 0.6; }
+  
+  /* 待办专用的勾选样式 */
+  .todo-row { display: flex; align-items: center; gap: 12px; }
+  .todo-row .checkbox {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid #d1d1d6; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .todo-row .checkbox.checked {
+    background: #34c759; border-color: #34c759;
+  }
+  .todo-row .checkbox.checked::after {
+    content: "✓"; color: #fff; font-size: 13px; font-weight: 700;
+  }
+  .todo-row .todo-text { flex: 1; font-size: 15px; line-height: 1.4; }
+  .todo-row.done .todo-text { text-decoration: line-through; color: #aeaeb2; }
+  
+  .add-btn {
+    position: fixed; bottom: 30px; right: 20px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #007aff; color: #fff; border: none;
+    font-size: 28px; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,122,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .add-btn:active { transform: scale(0.9); }
+  
+  .tabs { display: flex; gap: 0; margin-bottom: 20px; background: #e5e5ea; border-radius: 10px; padding: 2px; }
+  .tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #8e8e93; cursor: pointer; transition: all 0.2s; border: none; background: none; }
+  .tab.active { background: #fff; color: #1c1c1e; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  
+  .count { font-size: 12px; color: #8e8e93; font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Do & Write</h1>
+    <div class="date">2026年7月25日 星期六</div>
+  </div>
+  
+  <div class="section">
+    <div class="tabs">
+      <button class="tab active">📋 待办 <span class="count">3</span></button>
+      <button class="tab">💡 灵感 <span class="count">4</span></button>
+    </div>
+  </div>
+
+  <!-- 待办 Tab -->
+  <div id="tab-todo">
+    <!-- 今天到期 -->
+    <div class="section">
+      <h2>📌 今天</h2>
+      <div class="card">
+        <div class="todo-row">
+          <div class="checkbox"></div>
+          <div class="todo-text">给车做保养，约下午 3 点</div>
+        </div>
+        <div class="meta" style="margin-top: 6px;">
+          <span class="ddl-badge">⏰ 今天</span>
+        </div>
+      </div>
+      <div class="card done">
+        <div class="todo-row done">
+          <div class="checkbox checked"></div>
+          <div class="todo-text">取快递，顺丰生鲜件</div>
+        </div>
+        <div class="meta" style="margin-top: 6px;">
+          <span>✅ 已完成</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 未来待办 -->
+    <div class="section">
+      <h2>🗓 之后</h2>
+      <div class="card">
+        <div class="todo-row">
+          <div class="checkbox"></div>
+          <div class="todo-text">交房租</div>
+        </div>
+        <div class="meta" style="margin-top: 6px;">
+          <span class="ddl-warn">⏰ 8月1日（7天后）</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="todo-row">
+          <div class="checkbox"></div>
+          <div class="todo-text">买老爸生日礼物</div>
+        </div>
+        <div class="meta" style="margin-top: 6px;">
+          <span class="ddl-warn">⏰ 8月10日 · 还有16天</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="todo-row">
+          <div class="checkbox"></div>
+          <div class="todo-text">整理手机相册</div>
+        </div>
+        <div class="meta" style="margin-top: 6px;">
+          <span>🕐 未设期限</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 灵感 Tab（默认隐藏） -->
+  <div id="tab-inspo" style="display:none;">
+    <div class="section">
+      <h2>📌 今天要写</h2>
+      <div class="card">
+        <div class="idea">AI Agent 给普通人带来的5个真实改变</div>
+        <div class="meta">
+          <span class="source-tag wechat">📱 公众号</span>
+          <span>数字生命卡兹克</span>
+          <span class="ddl-badge">⏰ 今天截止</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⏳ 即将到期</h2>
+      <div class="card">
+        <div class="idea">免费 AI 工具大盘点（2026版）</div>
+        <div class="meta">
+          <span class="source-tag xhs">📕 小红书</span>
+          <span>AI科技评论</span>
+          <span class="ddl-warn">⏰ 7月28日（3天后）</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="idea">Hermes + DeepSeek 视觉能力教程</div>
+        <div class="meta">
+          <span class="source-tag web">🌐 网页</span>
+          <span>自己经验</span>
+          <span class="ddl-warn">⏰ 8月2日（7天后）</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📋 以后写</h2>
+      <div class="card">
+        <div class="idea">oCPX 竞价用菜市场讨价还价解释</div>
+        <div class="meta">
+          <span class="source-tag wechat">📱 公众号</span>
+          <span>聚光投放实战</span>
+          <span>🕐 8月15日</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="add-btn" onclick="alert('添加新事项')">+</button>
+  <div style="height: 100px;"></div>
+
+  <script>
+    // 简单的 Tab 切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const isTodo = this.textContent.includes('待办');
+        document.getElementById('tab-todo').style.display = isTodo ? 'block' : 'none';
+        document.getElementById('tab-inspo').style.display = isTodo ? 'none' : 'block';
+      });
+    });
+    // 点击勾选框
+    document.querySelectorAll('.checkbox').forEach(cb => {
+      cb.addEventListener('click', function() {
+        this.classList.toggle('checked');
+        this.parentElement.classList.toggle('done');
+      });
+    });
+  </script>
+</body>
+</html>

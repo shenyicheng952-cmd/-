@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>灵感计划 — Warm Editorial</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    background: #faf8f5;
+    color: #2c2416;
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  .header {
+    padding: 50px 24px 24px;
+    border-bottom: 1px solid #e8e2d8;
+    position: sticky;
+    top: 0;
+    background: #faf8f5;
+    z-index: 10;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; }
+  .header .sub { font-size: 14px; color: #a09888; margin-top: 4px; font-family: -apple-system, sans-serif; }
+  
+  .section { padding: 20px 24px 10px; }
+  .section h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: #b8a88a; margin-bottom: 14px; font-family: -apple-system, sans-serif; }
+  
+  .card {
+    background: #fffefb;
+    border: 1px solid #ede6da;
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-bottom: 8px;
+    position: relative;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .card:active { background: #fdfaf2; }
+  .card.urgent { border-left-color: #d4a574; }
+  .card.warning { border-left-color: #c9a96e; }
+  
+  .card .idea { font-size: 16px; font-weight: 600; line-height: 1.6; margin-bottom: 8px; }
+  .card .meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #a09888; font-family: -apple-system, sans-serif; }
+  
+  .source-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border: 1px solid #d4cbb8; border-radius: 2px;
+    font-size: 11px; color: #8b7355; background: #f7f3ea;
+    font-family: -apple-system, sans-serif;
+  }
+  
+  .ddl-urgent { color: #c0392b; font-weight: 600; }
+  .ddl-warn { color: #b8860b; font-weight: 600; }
+  .done { opacity: 0.45; }
+  .done .idea { text-decoration: line-through; }
+  
+  .add-btn {
+    position: fixed; bottom: 30px; right: 20px;
+    width: 52px; height: 52px; border-radius: 2px;
+    background: #8b7355; color: #fff; border: none;
+    font-size: 24px; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(139,115,85,0.3);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .add-btn:active { background: #6b5a45; }
+  
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.red { background: #c0392b; }
+  .dot.amber { background: #b8860b; }
+  .dot.green { background: #7d9b76; }
+  
+  .stats { 
+    display: grid; grid-template-columns: repeat(3, 1fr); 
+    gap: 12px; padding: 0 24px; margin-bottom: 10px;
+  }
+  .stat { 
+    text-align: center; padding: 14px 8px; 
+    background: #fffefb; border: 1px solid #ede6da; border-radius: 4px;
+  }
+  .stat .num { font-size: 28px; font-weight: 700; color: #5c4a2e; }
+  .stat .label { font-size: 11px; color: #a09888; font-family: -apple-system, sans-serif; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>明日灵感</h1>
+    <div class="sub">「每个选题都值得被认真对待」</div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="section">
+    <div class="stats">
+      <div class="stat"><div class="num">2</div><div class="label">今日到期</div></div>
+      <div class="stat"><div class="num">4</div><div class="label">待完成</div></div>
+      <div class="stat"><div class="num">12</div><div class="label">已用</div></div>
+    </div>
+  </div>
+
+  <!-- 今天 -->
+  <div class="section">
+    <h2>📌 今日到期</h2>
+    <div class="card urgent">
+      <div class="idea">AI Agent 给普通人带来的5个真实改变</div>
+      <div class="meta">
+        <span class="source-tag">📱 公众号 · 数字生命卡兹克</span>
+        <span class="ddl-urgent">● 今天截止</span>
+      </div>
+    </div>
+    <div class="card done">
+      <div class="idea">为什么大模型价格战，普通人反而是赢家</div>
+      <div class="meta">
+        <span class="source-tag">🎵 抖音 · 差评</span>
+        <span>✓ 7月25日已用</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 临近 -->
+  <div class="section">
+    <h2>⏳ 三天内到期</h2>
+    <div class="card warning">
+      <div class="idea">免费 AI 工具大盘点（2026 年夏季版）</div>
+      <div class="meta">
+        <span class="source-tag">📕 小红书 · AI科技评论</span>
+        <span class="ddl-warn">● 7月28日</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 以后 -->
+  <div class="section">
+    <h2>🗓 以后写</h2>
+    <div class="card">
+      <div class="idea">Hermes Agent 入门指南：从安装到第一个自动化</div>
+      <div class="meta">
+        <span class="source-tag">🌐 网页 · Nous Research</span>
+        <span>8月2日 · 还有7天</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="idea">oCPX 竞价机制用菜市场讨价还价解释</div>
+      <div class="meta">
+        <span class="source-tag">📱 公众号 · 聚光投放实战</span>
+        <span>8月15日 · 计划中</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="idea">从零搭建个人 AI 工作流</div>
+      <div class="meta">
+        <span class="source-tag">🎵 抖音 · 自己想到</span>
+        <span>未设日期</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="add-btn" onclick="alert('记录新灵感')">+</button>
+  <div style="height: 100px;"></div>
+</body>
+</html>

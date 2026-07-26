@@ -4,6 +4,7 @@ import { useTasks } from '../context/TasksContext'
 import { getDueGroup, sortTasks } from '../lib/dates'
 import TodoCard from './TodoCard'
 import InspoCard from './InspoCard'
+import TaskModal from './TaskModal'
 
 const GROUPS = [
   { id: 'today', todoTitle: '今天到期', inspoTitle: '今天要写', dot: 'bg-red-500' },
@@ -14,6 +15,7 @@ const GROUPS = [
 export default function TaskList({ type }) {
   const { tasks, loading, error, refresh, toggleTask, deleteTask } = useTasks()
   const [mutationError, setMutationError] = useState('')
+  const [editingTask, setEditingTask] = useState(null)
   const typedTasks = sortTasks(tasks.filter((task) => task.type === type))
 
   async function handle(action) {
@@ -72,6 +74,7 @@ export default function TaskList({ type }) {
                     index={index}
                     onToggle={(item) => handle(() => toggleTask(item))}
                     onDelete={(id) => handle(() => deleteTask(id))}
+                    onEdit={setEditingTask}
                   />
                 ))}
               {type === 'inspo' &&
@@ -81,12 +84,19 @@ export default function TaskList({ type }) {
                     task={task}
                     onToggle={(item) => handle(() => toggleTask(item))}
                     onDelete={(id) => handle(() => deleteTask(id))}
+                    onEdit={setEditingTask}
                   />
                 ))}
             </div>
           </section>
         )
       })}
+      <TaskModal
+        open={Boolean(editingTask)}
+        type={editingTask?.type ?? type}
+        task={editingTask}
+        onClose={() => setEditingTask(null)}
+      />
     </>
   )
 }

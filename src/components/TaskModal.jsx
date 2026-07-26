@@ -5,8 +5,8 @@ import { cleanTaskContent, detectSource, parseNaturalDate } from '../lib/parser'
 
 const SOURCE_LABELS = { wechat: '公众号', douyin: '抖音', xhs: '小红书', web: '网页' }
 
-export default function TaskModal({ open, type, initialText = '', onClose }) {
-  const { addTask } = useTasks()
+export default function TaskModal({ open, type, initialText = '', task = null, onClose }) {
+  const { addTask, updateTask } = useTasks()
   const [text, setText] = useState(initialText)
   const [date, setDate] = useState('')
   const [sourceName, setSourceName] = useState('')
@@ -17,12 +17,12 @@ export default function TaskModal({ open, type, initialText = '', onClose }) {
 
   useEffect(() => {
     if (open) {
-      setText(initialText)
-      setDate('')
-      setSourceName('')
+      setText(task?.content ?? initialText)
+      setDate(task?.due_date?.slice(0, 10) ?? '')
+      setSourceName(task?.source_name ?? '')
       setError('')
     }
-  }, [open, initialText])
+  }, [open, initialText, task])
 
   useEffect(() => {
     if (!open) return undefined
@@ -41,14 +41,21 @@ export default function TaskModal({ open, type, initialText = '', onClose }) {
     setBusy(true)
     setError('')
     try {
-      await addTask({
-        type,
+      const values = {
         content: cleanTaskContent(text) || text.trim(),
-        due_date: date || parsedDate,
+        due_date: date || parsedDate || null,
         source_name: type === 'inspo' ? sourceName.trim() || null : null,
-        source: type === 'inspo' ? detectedSource.source : null,
-        source_url: type === 'inspo' ? detectedSource.sourceUrl : null,
-      })
+      }
+      if (task) {
+        await updateTask(task.id, values)
+      } else {
+        await addTask({
+          ...values,
+          type,
+          source: type === 'inspo' ? detectedSource.source : null,
+          source_url: type === 'inspo' ? detectedSource.sourceUrl : null,
+        })
+      }
       onClose()
     } catch (err) {
       setError(err.message)
@@ -67,9 +74,9 @@ export default function TaskModal({ open, type, initialText = '', onClose }) {
       >
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold tracking-wider text-indigo-500">快速收进来</p>
+            <p className="text-xs font-bold tracking-wider text-indigo-500">{task ? '更新记录' : '快速收进来'}</p>
             <h2 id="modal-title" className="mt-0.5 text-xl font-extrabold text-slate-800">
-              添加{type === 'todo' ? '待办' : '灵感'}
+              {task ? '编辑' : '添加'}{type === 'todo' ? '待办' : '灵感'}
             </h2>
           </div>
           <button onClick={onClose} className="rounded-xl bg-slate-100 p-2 text-slate-500 hover:bg-slate-200" aria-label="关闭">

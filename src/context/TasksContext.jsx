@@ -56,6 +56,18 @@ export function TasksProvider({ children }) {
     setTasks((current) => current.map((item) => (item.id === task.id ? data : item)))
   }, [])
 
+  const updateTask = useCallback(async (id, updates) => {
+    const { data, error: mutationError } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (mutationError) throw mutationError
+    setTasks((current) => current.map((item) => (item.id === id ? data : item)))
+    return data
+  }, [])
+
   const deleteTask = useCallback(async (id) => {
     const { error: mutationError } = await supabase.from('tasks').delete().eq('id', id)
     if (mutationError) throw mutationError
@@ -63,8 +75,8 @@ export function TasksProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ tasks, loading, error, refresh, addTask, toggleTask, deleteTask }),
-    [tasks, loading, error, refresh, addTask, toggleTask, deleteTask],
+    () => ({ tasks, loading, error, refresh, addTask, updateTask, toggleTask, deleteTask }),
+    [tasks, loading, error, refresh, addTask, updateTask, toggleTask, deleteTask],
   )
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>

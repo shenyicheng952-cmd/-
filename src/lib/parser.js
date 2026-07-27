@@ -92,11 +92,8 @@ export function cleanTaskContent(text) {
 
 export function extractInspoContent(text) {
   const url = detectSource(text).sourceUrl
-  if (!url) return text.trim()
-  // Remove the URL from text, then return the rest as user note
-  const after = text.replace(url, '').trim()
-  // Also try to clean share template from the remaining
-  const cleaned = after
+  const base = url ? text.replace(url, '').trim() : text.trim()
+  const cleaned = base
     .replace(DOUYIN_SHARE_PATTERN, '')
     .replace(XHS_SHARE_PATTERN, '')
     .replace(SHARE_FRAGMENT_PATTERN, '')
@@ -106,7 +103,7 @@ export function extractInspoContent(text) {
     .replace(/\s{2,}/g, ' ')
     .replace(/^[，,。；;：:、\s]+|[，,。；;：:、\s]+$/g, '')
     .trim()
-  return cleaned || after.trim()
+  return cleaned || base || ''
 }
 
 function normalizeStep(step) {

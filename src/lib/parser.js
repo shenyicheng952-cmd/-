@@ -89,7 +89,9 @@ function normalizeStep(step) {
     .trim()
 }
 
-export function splitTaskSteps(text) {
+export function splitTaskSteps(text, type = 'todo') {
+  if (type !== 'todo') return []
+
   const content = text.trim()
   if (!content) return []
 

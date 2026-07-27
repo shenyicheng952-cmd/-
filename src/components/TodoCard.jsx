@@ -81,6 +81,18 @@ export default function TodoCard({ task, subtasks = [], index, onToggle, onDelet
             <span className="text-slate-400">未设期限</span>
           )}
         </div>
+        {subtasks.length > 0 && (
+          <ul className="ml-[34px] mt-2 space-y-1 border-t border-slate-100 pt-2">
+            {subtasks.map((subtask) => (
+              <li
+                key={subtask.id}
+                className={`text-sm leading-5 ${subtask.done_at ? 'text-slate-400 line-through' : 'text-slate-600'}`}
+              >
+                ☐ {subtask.content}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </article>
   )

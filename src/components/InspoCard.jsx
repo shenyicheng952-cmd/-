@@ -85,6 +85,18 @@ export default function InspoCard({ task, subtasks = [], onToggle, onDelete, onE
             <span>未设日期</span>
           )}
         </div>
+        {subtasks.length > 0 && (
+          <ul className="mt-2 space-y-1 border-t border-slate-100 pt-2">
+            {subtasks.map((subtask) => (
+              <li
+                key={subtask.id}
+                className={`text-sm leading-5 ${subtask.done_at ? 'text-slate-400 line-through' : 'text-slate-600'}`}
+              >
+                ☐ {subtask.content}
+              </li>
+            ))}
+          </ul>
+        )}
         {task.source_url && (
           <a
             href={task.source_url}

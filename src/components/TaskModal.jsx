@@ -25,7 +25,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
       setDate(task?.due_date?.slice(0, 10) ?? '')
       setSourceName(task?.source_name ?? '')
       setNewSubtask('')
-      setDraftSubtasks(task ? [] : splitTaskSteps(initialText))
+      setDraftSubtasks(task ? [] : splitTaskSteps(initialText, type))
       setDraftSubtasksTouched(false)
       setError('')
     }
@@ -177,7 +177,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
               onChange={(event) => {
                 const value = event.target.value
                 setText(value)
-                if (!task && !draftSubtasksTouched) setDraftSubtasks(splitTaskSteps(value))
+                if (!task && !draftSubtasksTouched) setDraftSubtasks(splitTaskSteps(value, type))
               }}
               placeholder={type === 'todo' ? '比如：7天后交房租' : '比如：下周五写 AI Agent 的 5 个改变'}
               className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-[15px] leading-6 outline-none transition placeholder:text-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"

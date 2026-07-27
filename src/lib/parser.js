@@ -141,6 +141,8 @@ export function extractInspoContent(text) {
 function normalizeStep(step) {
   return step
     .replace(/^\s*(?:第?[一二三四五六七八九十\d]+[.．、):：]|[-*•])\s*/u, '')
+    .replace(/^\s*(?:从|到|以及|和)\s*/u, '')
+    .replace(/\s*(?:都(?:应该|需要|要)?(?:有|做|完成)|应该有|需要做|要做|等(?:内容|事项)?)(?:这些|以上)?\s*$/u, '')
     .replace(/^[，,。；;：:、\s]+|[，,。；;：:、\s]+$/g, '')
     .trim()
 }
@@ -158,9 +160,13 @@ export function splitTaskSteps(text, type = 'todo') {
 
   if (!hasNumberedList && !hasEnumeration && !hasLongSentenceList) return []
 
-  const parts = content
+  const enumerationRange = content.match(/从\s*(.+?)(?:都应该有|都需要做|都要做|等(?:内容|事项)?)(?:[。！!]?\s*)$/u)
+  const listContent = enumerationRange?.[1] ?? content
+  const splitPattern = enumerationRange ? /[\n；;。、]+|还有|以及|(?<!提)到/u : /[\n；;。、]+|还有|以及/u
+
+  const parts = listContent
     .replace(/(?:^|\s+)第?[一二三四五六七八九十\d]+[.．、):：]\s*/gu, '\n')
-    .split(/[\n；;。]+|还有|、|到/u)
+    .split(splitPattern)
     .map(normalizeStep)
     .filter((step) => step.length >= 2)
 

@@ -9,6 +9,9 @@ const URL_TRAILING_PUNCTUATION = /[，。！？、；：,.!?;:）)\]】}》〉]+
 const SHARE_PROMPT_PATTERN =
   /(?:复制(?:此)?链接)?(?:打开|到)\s*(?:抖音|小红书|快手|微博)(?:app)?[，,：:\s]*(?:看看|查看|搜索|观看)?/giu
 const SHARE_CODE_PATTERN = /(?:^|\s)[A-Za-z0-9]{2,12}:\/+(?=\s|$)/gu
+const DOUYIN_SHARE_PATTERN = /^[\d.]*\s*复制打开抖音[，,]\s*看看【[^】]+】[的之]作品[，,]?\s*/u
+const XHS_SHARE_PATTERN = /^[\d.]*\s*复制(?:本条|打开)小红书[，,]\s*看看【[^】]+】[的之]?笔记[，,]?\s*/u
+const SHARE_FRAGMENT_PATTERN = /[\d.]*\s*(?:复制打开|复制本条|打开APP|长按复制)[^。！？\n]*(?:$)/giu
 
 function trimUrl(url) {
   return url.replace(URL_TRAILING_PUNCTUATION, '')
@@ -70,6 +73,9 @@ export function parseNaturalDate(text, reference = new Date()) {
 export function cleanTaskContent(text) {
   const original = text.trim()
   const cleaned = stripUrls(original)
+    .replace(DOUYIN_SHARE_PATTERN, '')
+    .replace(XHS_SHARE_PATTERN, '')
+    .replace(SHARE_FRAGMENT_PATTERN, '')
     .replace(/^\s*\d+(?:\.\d+)?\s*(?=(?:复制|打开|到)\s*(?:抖音|小红书|快手|微博))/u, '')
     .replace(SHARE_PROMPT_PATTERN, ' ')
     .replace(SHARE_CODE_PATTERN, ' ')

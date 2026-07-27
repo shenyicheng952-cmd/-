@@ -37,8 +37,8 @@ export default function InspoCard({ task, subtasks = [], onToggle, onDelete, onE
           >
             {done && <Check size={12} strokeWidth={3} />}
           </button>
-          <p className={`min-w-0 flex-1 text-[15px] font-semibold leading-[1.45] ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-            {content}
+          <p className={`min-w-0 flex-1 text-[15px] leading-[1.45] ${done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+            <span className="font-semibold">{content}</span>
           </p>
           <button
             type="button"
@@ -103,9 +103,9 @@ export default function InspoCard({ task, subtasks = [], onToggle, onDelete, onE
             onClick={(event) => event.stopPropagation()}
             target="_blank"
             rel="noreferrer"
-            className="mt-2 block truncate border-t border-slate-100 pt-2 text-xs font-semibold text-blue-500 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+            className="mt-2 flex items-center gap-1.5 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
           >
-            📎 来源链接
+            🔗 {task.source_url.length > 50 ? task.source_url.slice(0, 50) + '...' : task.source_url}
           </a>
         )}
       </div>

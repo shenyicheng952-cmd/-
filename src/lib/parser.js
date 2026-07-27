@@ -90,6 +90,25 @@ export function cleanTaskContent(text) {
   return cleaned || original
 }
 
+export function extractInspoContent(text) {
+  const url = detectSource(text).sourceUrl
+  if (!url) return text.trim()
+  // Remove the URL from text, then return the rest as user note
+  const after = text.replace(url, '').trim()
+  // Also try to clean share template from the remaining
+  const cleaned = after
+    .replace(DOUYIN_SHARE_PATTERN, '')
+    .replace(XHS_SHARE_PATTERN, '')
+    .replace(SHARE_FRAGMENT_PATTERN, '')
+    .replace(SHARE_CODE_PATTERN, ' ')
+    .replace(BARE_SHARE_CODE, ' ')
+    .replace(/^[\d.]+\s*/u, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[，,。；;：:、\s]+|[，,。；;：:、\s]+$/g, '')
+    .trim()
+  return cleaned || after.trim()
+}
+
 function normalizeStep(step) {
   return step
     .replace(/^\s*(?:第?[一二三四五六七八九十\d]+[.．、):：]|[-*•])\s*/u, '')

@@ -1,5 +1,6 @@
 import { Check, Pencil, Trash2 } from 'lucide-react'
 import { formatDueDate, getDueGroup } from '../lib/dates'
+import { extractInspoContent } from '../lib/parser'
 
 const SOURCES = {
   wechat: { label: '公众号', icon: '📱', iconClass: 'bg-emerald-50', tagClass: 'bg-emerald-100 text-emerald-800' },
@@ -13,7 +14,7 @@ export default function InspoCard({ task, subtasks = [], onToggle, onDelete, onE
   const source = SOURCES[task.source] ?? { label: '灵感', icon: '💡', iconClass: 'bg-violet-50', tagClass: 'bg-violet-100 text-violet-800' }
   const dueGroup = getDueGroup(task.due_date)
   const completedSubtasks = subtasks.filter((subtask) => subtask.done_at).length
-  const content = task.content
+  const content = extractInspoContent(task.content) || task.content
 
   return (
     <article

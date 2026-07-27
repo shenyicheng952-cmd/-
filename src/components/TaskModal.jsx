@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Check, LoaderCircle, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import { useTasks } from '../context/TasksContext'
-import { cleanTaskContent, detectSource, parseNaturalDate, splitTaskSteps } from '../lib/parser'
+import { cleanTaskContent, detectSource, extractInspoContent, parseNaturalDate, splitTaskSteps } from '../lib/parser'
 
 const SOURCE_LABELS = { wechat: '公众号', douyin: '抖音', xhs: '小红书', web: '网页' }
 
@@ -101,7 +101,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
     setError('')
     try {
       const values = {
-        content: type === 'inspo' ? text.trim() : cleanTaskContent(text) || text.trim(),
+        content: type === 'inspo' ? extractInspoContent(text) || text.trim() : cleanTaskContent(text) || text.trim(),
         due_date: date || parsedDate || null,
         source_name: type === 'inspo' ? sourceName.trim() || null : null,
         source:

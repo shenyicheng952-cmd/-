@@ -9,9 +9,10 @@ const URL_TRAILING_PUNCTUATION = /[，。！？、；：,.!?;:）)\]】}》〉]+
 const SHARE_PROMPT_PATTERN =
   /(?:复制(?:此)?链接)?(?:打开|到)\s*(?:抖音|小红书|快手|微博)(?:app)?[，,：:\s]*(?:看看|查看|搜索|观看)?/giu
 const SHARE_CODE_PATTERN = /(?:^|\s)[A-Za-z0-9]{2,12}:\/+(?=\s|$)/gu
-const DOUYIN_SHARE_PATTERN = /^[\d.]*\s*复制打开抖音[，,]\s*看看【[^】]+】[的之]作品[，,]?\s*/u
-const XHS_SHARE_PATTERN = /^[\d.]*\s*复制(?:本条|打开)小红书[，,]\s*看看【[^】]+】[的之]?笔记[，,]?\s*/u
-const SHARE_FRAGMENT_PATTERN = /[\d.]*\s*(?:复制打开|复制本条|打开APP|长按复制)[^。！？\n]*(?:$)/giu
+const DOUYIN_SHARE_PATTERN = /[\d.]*\s*复制打开抖音[，,]\s*看看【[^】]+】[的之]作品[，,]?\s*/u
+const XHS_SHARE_PATTERN = /[\d.]*\s*复制(?:本条|打开)小红书[，,]\s*看看【[^】]+】[的之]?笔记[，,]?\s*/u
+const SHARE_FRAGMENT_PATTERN = /[\d.]*\s*(?:复制打开|复制本条|打开APP|长按复制)[^。！？\n]*/giu
+const BARE_SHARE_CODE = /(?:^|\s)[A-Za-z]{2,6}:\/\S*(?=\s|$)/gu
 
 function trimUrl(url) {
   return url.replace(URL_TRAILING_PUNCTUATION, '')
@@ -79,6 +80,7 @@ export function cleanTaskContent(text) {
     .replace(/^\s*\d+(?:\.\d+)?\s*(?=(?:复制|打开|到)\s*(?:抖音|小红书|快手|微博))/u, '')
     .replace(SHARE_PROMPT_PATTERN, ' ')
     .replace(SHARE_CODE_PATTERN, ' ')
+    .replace(BARE_SHARE_CODE, ' ')
     .replace(/(?:长按复制|复制口令|打开APP查看更多|来抖音发现更多|本内容来自小红书)\s*/giu, ' ')
     .replace(/(?:今天|明天|后天|一周后|下周[一二三四五六日天]|下个月\s*[一二两三四五六七八九十\d]+\s*[号日]|[一二两三四五六七八九十\d]+\s*天后|(?:\d{1,2}月)?\d{1,2}[号日])(?:截止|前|交)?/g, '')
     .replace(/\s{2,}/g, ' ')

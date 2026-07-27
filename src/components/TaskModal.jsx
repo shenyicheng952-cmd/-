@@ -101,7 +101,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
     setError('')
     try {
       const values = {
-        content: cleanTaskContent(text) || text.trim(),
+        content: type === 'inspo' ? text.trim() : cleanTaskContent(text) || text.trim(),
         due_date: date || parsedDate || null,
         source_name: type === 'inspo' ? sourceName.trim() || null : null,
         source:

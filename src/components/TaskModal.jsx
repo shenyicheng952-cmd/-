@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Check, LoaderCircle, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import { useTasks } from '../context/TasksContext'
-import { cleanTaskContent, detectSource, parseNaturalDate } from '../lib/parser'
+import { cleanTaskContent, detectSource, parseNaturalDate, splitTaskSteps } from '../lib/parser'
 
 const SOURCE_LABELS = { wechat: '公众号', douyin: '抖音', xhs: '小红书', web: '网页' }
 
@@ -11,6 +11,8 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
   const [date, setDate] = useState('')
   const [sourceName, setSourceName] = useState('')
   const [newSubtask, setNewSubtask] = useState('')
+  const [draftSubtasks, setDraftSubtasks] = useState([])
+  const [draftSubtasksTouched, setDraftSubtasksTouched] = useState(false)
   const [subtaskBusy, setSubtaskBusy] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -23,6 +25,8 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
       setDate(task?.due_date?.slice(0, 10) ?? '')
       setSourceName(task?.source_name ?? '')
       setNewSubtask('')
+      setDraftSubtasks(task ? [] : splitTaskSteps(initialText))
+      setDraftSubtasksTouched(false)
       setError('')
     }
   }, [open, initialText, task])
@@ -112,10 +116,27 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
       if (task) {
         await updateTask(task.id, values)
       } else {
-        await addTask({
+        const parent = await addTask({
           ...values,
           type,
         })
+        await Promise.all(
+          draftSubtasks
+            .map((content) => content.trim())
+            .filter(Boolean)
+            .map((content) =>
+              addTask({
+                type,
+                content,
+                parent_id: parent.id,
+                due_date: null,
+                source: null,
+                source_url: null,
+                source_name: null,
+                done_at: null,
+              }),
+            ),
+        )
       }
       onClose()
     } catch (err) {
@@ -153,7 +174,11 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
               required
               rows={4}
               value={text}
-              onChange={(event) => setText(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value
+                setText(value)
+                if (!task && !draftSubtasksTouched) setDraftSubtasks(splitTaskSteps(value))
+              }}
               placeholder={type === 'todo' ? '比如：7天后交房租' : '比如：下周五写 AI Agent 的 5 个改变'}
               className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-[15px] leading-6 outline-none transition placeholder:text-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
             />
@@ -193,6 +218,55 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none placeholder:text-slate-300 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
               />
             </label>
+          )}
+
+          {!task && (type === 'todo' || draftSubtasks.length > 0) && (
+            <section className="rounded-2xl border border-slate-200 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-700">子步骤</span>
+                {draftSubtasks.length > 0 && (
+                  <span className="text-xs text-indigo-500">已自动拆分，可手动调整</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                {draftSubtasks.map((subtask, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      value={subtask}
+                      onChange={(event) => {
+                        setDraftSubtasksTouched(true)
+                        setDraftSubtasks((current) =>
+                          current.map((item, itemIndex) => (itemIndex === index ? event.target.value : item)),
+                        )
+                      }}
+                      placeholder={`子步骤 ${index + 1}`}
+                      className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraftSubtasksTouched(true)
+                        setDraftSubtasks((current) => current.filter((_, itemIndex) => itemIndex !== index))
+                      }}
+                      className="rounded-lg p-2 text-slate-300 transition hover:bg-red-50 hover:text-red-500"
+                      aria-label="删除子步骤"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDraftSubtasksTouched(true)
+                  setDraftSubtasks((current) => [...current, ''])
+                }}
+                className="mt-3 flex items-center gap-1 text-xs font-bold text-indigo-500 hover:text-indigo-600"
+              >
+                <Plus size={14} /> 添加子步骤
+              </button>
+            </section>
           )}
 
           {task && (

@@ -2,8 +2,13 @@ import * as chrono from 'chrono-node'
 import { toLocalDateKey } from './dates'
 
 const CHINESE_DIGITS = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 }
-const URL_PATTERN = /https?:\/\/[^\s<>"'`]+/giu
+const URL_PATTERN = /(?:https?:\/\/|www\.)[^\s<>"'`]+/giu
+const BARE_URL_PATTERN =
+  /(?:www\.)?(?:[a-z0-9-]+\.)+(?:com|cn|net|org|io|me|app|co)(?:\/[^\s<>"'`]*)?/giu
 const URL_TRAILING_PUNCTUATION = /[，。！？、；：,.!?;:）)\]】}》〉]+$/u
+const SHARE_PROMPT_PATTERN =
+  /(?:复制(?:此)?链接)?(?:打开|到)\s*(?:抖音|小红书|快手|微博)(?:app)?[，,：:\s]*(?:看看|查看|搜索|观看)?/giu
+const SHARE_CODE_PATTERN = /(?:^|\s)[A-Za-z0-9]{2,12}:\/+(?=\s|$)/gu
 
 function trimUrl(url) {
   return url.replace(URL_TRAILING_PUNCTUATION, '')
@@ -14,10 +19,9 @@ export function extractUrls(text) {
 }
 
 export function stripUrls(text) {
-  return text.replace(URL_PATTERN, (url) => {
-    const trimmed = trimUrl(url)
-    return url.slice(trimmed.length)
-  })
+  return text
+    .replace(URL_PATTERN, (url) => url.slice(trimUrl(url).length))
+    .replace(BARE_URL_PATTERN, (url) => url.slice(trimUrl(url).length))
 }
 
 function chineseNumber(value) {
@@ -64,11 +68,45 @@ export function parseNaturalDate(text, reference = new Date()) {
 }
 
 export function cleanTaskContent(text) {
-  return stripUrls(text)
+  const original = text.trim()
+  const cleaned = stripUrls(original)
+    .replace(/^\s*\d+(?:\.\d+)?\s*(?=(?:复制|打开|到)\s*(?:抖音|小红书|快手|微博))/u, '')
+    .replace(SHARE_PROMPT_PATTERN, ' ')
+    .replace(SHARE_CODE_PATTERN, ' ')
+    .replace(/(?:长按复制|复制口令|打开APP查看更多|来抖音发现更多|本内容来自小红书)\s*/giu, ' ')
     .replace(/(?:今天|明天|后天|一周后|下周[一二三四五六日天]|下个月\s*[一二两三四五六七八九十\d]+\s*[号日]|[一二两三四五六七八九十\d]+\s*天后|(?:\d{1,2}月)?\d{1,2}[号日])(?:截止|前|交)?/g, '')
     .replace(/\s{2,}/g, ' ')
-    .replace(/^[，,、\s]+|[，,、\s]+$/g, '')
+    .replace(/^[，,。；;：:、\s]+|[，,。；;：:、\s]+$/g, '')
     .trim()
+
+  return cleaned || original
+}
+
+function normalizeStep(step) {
+  return step
+    .replace(/^\s*(?:第?[一二三四五六七八九十\d]+[.．、):：]|[-*•])\s*/u, '')
+    .replace(/^[，,。；;：:、\s]+|[，,。；;：:、\s]+$/g, '')
+    .trim()
+}
+
+export function splitTaskSteps(text) {
+  const content = text.trim()
+  if (!content) return []
+
+  const hasNumberedList = /(?:^|[\s；;。])第?[一二三四五六七八九十\d]+[.．、):：]\s*\S/u.test(content)
+  const hasEnumeration = content.includes('、')
+  const hasLongSentenceList =
+    content.length >= 12 && /；|;|。|还有|到/u.test(content)
+
+  if (!hasNumberedList && !hasEnumeration && !hasLongSentenceList) return []
+
+  const parts = content
+    .replace(/(?:^|\s+)第?[一二三四五六七八九十\d]+[.．、):：]\s*/gu, '\n')
+    .split(/[\n；;。]+|还有|、|到/u)
+    .map(normalizeStep)
+    .filter((step) => step.length >= 2)
+
+  return [...new Set(parts)].length >= 2 ? [...new Set(parts)] : []
 }
 
 export function detectSource(text) {

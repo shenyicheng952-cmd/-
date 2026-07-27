@@ -16,7 +16,7 @@ export default function TaskList({ type }) {
   const { tasks, loading, error, refresh, toggleTask, deleteTask } = useTasks()
   const [mutationError, setMutationError] = useState('')
   const [editingTask, setEditingTask] = useState(null)
-  const typedTasks = sortTasks(tasks.filter((task) => task.type === type))
+  const typedTasks = sortTasks(tasks.filter((task) => task.type === type && !task.parent_id))
 
   async function handle(action) {
     setMutationError('')
@@ -71,6 +71,7 @@ export default function TaskList({ type }) {
                   <TodoCard
                     key={task.id}
                     task={task}
+                    subtasks={tasks.filter((item) => item.parent_id === task.id)}
                     index={index}
                     onToggle={(item) => handle(() => toggleTask(item))}
                     onDelete={(id) => handle(() => deleteTask(id))}
@@ -82,6 +83,7 @@ export default function TaskList({ type }) {
                   <InspoCard
                     key={task.id}
                     task={task}
+                    subtasks={tasks.filter((item) => item.parent_id === task.id)}
                     onToggle={(item) => handle(() => toggleTask(item))}
                     onDelete={(id) => handle(() => deleteTask(id))}
                     onEdit={setEditingTask}

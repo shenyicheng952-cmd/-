@@ -6,7 +6,7 @@ function isToday(dateString) {
 }
 
 export default function StatsRing({ tasks, type }) {
-  const activeTasks = tasks.filter((task) => task.type === type)
+  const activeTasks = tasks.filter((task) => task.type === type && !task.parent_id)
   const stats = [
     {
       value: activeTasks.filter((task) => !task.done_at && isToday(task.due_date)).length,

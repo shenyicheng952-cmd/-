@@ -1,4 +1,4 @@
-import { Check, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { Check, Pencil, Trash2 } from 'lucide-react'
 import { formatDueDate, getDueGroup } from '../lib/dates'
 
 const SOURCES = {
@@ -8,10 +8,11 @@ const SOURCES = {
   web: { label: '网页', icon: '🌐', iconClass: 'bg-blue-50', tagClass: 'bg-blue-100 text-blue-800' },
 }
 
-export default function InspoCard({ task, onToggle, onDelete, onEdit }) {
+export default function InspoCard({ task, subtasks = [], onToggle, onDelete, onEdit }) {
   const done = Boolean(task.done_at)
   const source = SOURCES[task.source] ?? { label: '灵感', icon: '💡', iconClass: 'bg-violet-50', tagClass: 'bg-violet-100 text-violet-800' }
   const dueGroup = getDueGroup(task.due_date)
+  const completedSubtasks = subtasks.filter((subtask) => subtask.done_at).length
 
   return (
     <article
@@ -63,18 +64,7 @@ export default function InspoCard({ task, onToggle, onDelete, onEdit }) {
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
           <span className={`rounded-full px-2.5 py-1 font-bold ${source.tagClass}`}>{source.label}</span>
           {task.source_name && <span>{task.source_name}</span>}
-          {task.source_url && (
-            <a
-              href={task.source_url}
-              onClick={(event) => event.stopPropagation()}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded text-indigo-400 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200"
-              aria-label="打开来源链接"
-            >
-              <ExternalLink size={14} />
-            </a>
-          )}
+          {subtasks.length > 0 && <span className="font-bold text-violet-500">{completedSubtasks}/{subtasks.length} 已完成</span>}
           {done ? (
             <span>✓ 已用</span>
           ) : task.due_date ? (
@@ -93,6 +83,17 @@ export default function InspoCard({ task, onToggle, onDelete, onEdit }) {
             <span>未设日期</span>
           )}
         </div>
+        {task.source_url && (
+          <a
+            href={task.source_url}
+            onClick={(event) => event.stopPropagation()}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 block truncate border-t border-slate-100 pt-2 text-xs font-semibold text-blue-500 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+          >
+            📎 来源链接
+          </a>
+        )}
       </div>
     </article>
   )

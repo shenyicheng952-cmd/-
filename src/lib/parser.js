@@ -2,6 +2,23 @@ import * as chrono from 'chrono-node'
 import { toLocalDateKey } from './dates'
 
 const CHINESE_DIGITS = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 }
+const URL_PATTERN = /https?:\/\/[^\s<>"'`]+/giu
+const URL_TRAILING_PUNCTUATION = /[，。！？、；：,.!?;:）)\]】}》〉]+$/u
+
+function trimUrl(url) {
+  return url.replace(URL_TRAILING_PUNCTUATION, '')
+}
+
+export function extractUrls(text) {
+  return [...text.matchAll(URL_PATTERN)].map((match) => trimUrl(match[0])).filter(Boolean)
+}
+
+export function stripUrls(text) {
+  return text.replace(URL_PATTERN, (url) => {
+    const trimmed = trimUrl(url)
+    return url.slice(trimmed.length)
+  })
+}
 
 function chineseNumber(value) {
   if (/^\d+$/.test(value)) return Number(value)
@@ -40,14 +57,14 @@ function customChineseDate(text, reference) {
 }
 
 export function parseNaturalDate(text, reference = new Date()) {
-  const custom = customChineseDate(text, reference)
-  const parsed = custom ?? chrono.zh.casual.parseDate(text, reference, { forwardDate: true })
+  const contentWithoutUrls = stripUrls(text)
+  const custom = customChineseDate(contentWithoutUrls, reference)
+  const parsed = custom ?? chrono.zh.casual.parseDate(contentWithoutUrls, reference, { forwardDate: true })
   return parsed ? toLocalDateKey(parsed) : null
 }
 
 export function cleanTaskContent(text) {
-  return text
-    .replace(/https?:\/\/[^\s]+/gi, '')
+  return stripUrls(text)
     .replace(/(?:今天|明天|后天|一周后|下周[一二三四五六日天]|下个月\s*[一二两三四五六七八九十\d]+\s*[号日]|[一二两三四五六七八九十\d]+\s*天后|(?:\d{1,2}月)?\d{1,2}[号日])(?:截止|前|交)?/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/^[，,、\s]+|[，,、\s]+$/g, '')
@@ -55,10 +72,9 @@ export function cleanTaskContent(text) {
 }
 
 export function detectSource(text) {
-  const match = text.match(/https?:\/\/[^\s]+/i)
-  if (!match) return { source: null, sourceUrl: null }
+  const [sourceUrl] = extractUrls(text)
+  if (!sourceUrl) return { source: null, sourceUrl: null }
 
-  const sourceUrl = match[0].replace(/[，。！？、),\]]+$/g, '')
   try {
     const hostname = new URL(sourceUrl).hostname.toLowerCase()
     if (hostname === 'mp.weixin.qq.com' || hostname.endsWith('.weixin.qq.com')) {

@@ -3,9 +3,10 @@ import { formatDueDate, getDueGroup } from '../lib/dates'
 
 const TODO_ICONS = ['✦', '✓', '◌', '→']
 
-export default function TodoCard({ task, index, onToggle, onDelete, onEdit }) {
+export default function TodoCard({ task, subtasks = [], index, onToggle, onDelete, onEdit }) {
   const done = Boolean(task.done_at)
   const dueGroup = getDueGroup(task.due_date)
+  const completedSubtasks = subtasks.filter((subtask) => subtask.done_at).length
 
   return (
     <article
@@ -57,6 +58,11 @@ export default function TodoCard({ task, index, onToggle, onDelete, onEdit }) {
           </button>
         </div>
         <div className="ml-[34px] mt-1.5 text-xs">
+          {subtasks.length > 0 && (
+            <span className="mr-2 inline-flex rounded-full bg-indigo-50 px-2.5 py-1 font-bold text-indigo-500">
+              {completedSubtasks}/{subtasks.length} 已完成
+            </span>
+          )}
           {done ? (
             <span className="text-slate-400">✓ 已完成</span>
           ) : task.due_date ? (

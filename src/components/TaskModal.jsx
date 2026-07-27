@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, LoaderCircle, Sparkles, X } from 'lucide-react'
+import { CalendarDays, Check, LoaderCircle, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import { useTasks } from '../context/TasksContext'
 import { cleanTaskContent, detectSource, parseNaturalDate } from '../lib/parser'
 
 const SOURCE_LABELS = { wechat: '公众号', douyin: '抖音', xhs: '小红书', web: '网页' }
 
 export default function TaskModal({ open, type, initialText = '', task = null, onClose }) {
-  const { addTask, updateTask } = useTasks()
+  const { tasks, addTask, updateTask, deleteTask } = useTasks()
   const [text, setText] = useState(initialText)
   const [date, setDate] = useState('')
   const [sourceName, setSourceName] = useState('')
+  const [subtasks, setSubtasks] = useState([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const parsedDate = useMemo(() => parseNaturalDate(text), [text])
@@ -20,9 +21,16 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
       setText(task?.content ?? initialText)
       setDate(task?.due_date?.slice(0, 10) ?? '')
       setSourceName(task?.source_name ?? '')
+      setSubtasks(
+        task
+          ? tasks
+              .filter((item) => item.parent_id === task.id)
+              .map((item) => ({ ...item, initialContent: item.content, initialDoneAt: item.done_at }))
+          : [],
+      )
       setError('')
     }
-  }, [open, initialText, task])
+  }, [open, initialText, task, tasks])
 
   useEffect(() => {
     if (!open) return undefined
@@ -35,6 +43,21 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
 
   if (!open) return null
 
+  function addSubtask() {
+    setSubtasks((current) => [
+      ...current,
+      { id: `new-${crypto.randomUUID()}`, content: '', done_at: null, isNew: true },
+    ])
+  }
+
+  function updateSubtask(id, updates) {
+    setSubtasks((current) => current.map((subtask) => (subtask.id === id ? { ...subtask, ...updates } : subtask)))
+  }
+
+  function removeSubtask(id) {
+    setSubtasks((current) => current.filter((subtask) => subtask.id !== id))
+  }
+
   async function submit(event) {
     event.preventDefault()
     if (!text.trim()) return
@@ -45,15 +68,48 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
         content: cleanTaskContent(text) || text.trim(),
         due_date: date || parsedDate || null,
         source_name: type === 'inspo' ? sourceName.trim() || null : null,
+        source:
+          type === 'inspo'
+            ? detectedSource.source ?? task?.source ?? null
+            : null,
+        source_url:
+          type === 'inspo'
+            ? detectedSource.sourceUrl ?? task?.source_url ?? null
+            : null,
       }
       if (task) {
         await updateTask(task.id, values)
+        const originalSubtasks = tasks.filter((item) => item.parent_id === task.id)
+        const retainedIds = new Set(subtasks.filter((subtask) => !subtask.isNew).map((subtask) => subtask.id))
+
+        for (const original of originalSubtasks) {
+          if (!retainedIds.has(original.id)) await deleteTask(original.id)
+        }
+        for (const subtask of subtasks) {
+          const content = subtask.content.trim()
+          if (!content) {
+            if (!subtask.isNew) await deleteTask(subtask.id)
+            continue
+          }
+          if (subtask.isNew) {
+            await addTask({
+              type,
+              content,
+              parent_id: task.id,
+              due_date: null,
+              source: null,
+              source_url: null,
+              source_name: null,
+              done_at: subtask.done_at,
+            })
+          } else if (content !== subtask.initialContent || subtask.done_at !== subtask.initialDoneAt) {
+            await updateTask(subtask.id, { content, done_at: subtask.done_at })
+          }
+        }
       } else {
         await addTask({
           ...values,
           type,
-          source: type === 'inspo' ? detectedSource.source : null,
-          source_url: type === 'inspo' ? detectedSource.sourceUrl : null,
         })
       }
       onClose()
@@ -70,7 +126,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="w-full max-w-[430px] rounded-t-[28px] bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-[28px]"
+        className="max-h-[92vh] w-full max-w-[430px] overflow-y-auto rounded-t-[28px] bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-[28px]"
       >
         <header className="flex items-center justify-between">
           <div>
@@ -132,6 +188,60 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none placeholder:text-slate-300 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
               />
             </label>
+          )}
+
+          {task && (
+            <section className="rounded-2xl border border-slate-200 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-700">子步骤</span>
+                <button
+                  type="button"
+                  onClick={addSubtask}
+                  className="flex items-center gap-1 rounded-xl bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-500 transition hover:bg-indigo-100"
+                >
+                  <Plus size={14} /> 添加
+                </button>
+              </div>
+              {subtasks.length === 0 ? (
+                <p className="py-2 text-center text-xs text-slate-400">把任务拆成可以逐个完成的小步骤</p>
+              ) : (
+                <div className="space-y-2">
+                  {subtasks.map((subtask) => {
+                    const done = Boolean(subtask.done_at)
+                    return (
+                      <div key={subtask.id} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateSubtask(subtask.id, { done_at: done ? null : new Date().toISOString() })}
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition ${
+                            done ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-400'
+                          }`}
+                          aria-label={done ? '标记子步骤为未完成' : '标记子步骤为已完成'}
+                        >
+                          {done && <Check size={12} strokeWidth={3} />}
+                        </button>
+                        <input
+                          value={subtask.content}
+                          onChange={(event) => updateSubtask(subtask.id, { content: event.target.value })}
+                          placeholder="输入一个小步骤"
+                          className={`min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
+                            done ? 'text-slate-400 line-through' : 'text-slate-700'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSubtask(subtask.id)}
+                          className="rounded-lg p-1.5 text-slate-300 transition hover:bg-red-50 hover:text-red-500"
+                          aria-label="删除子步骤"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
           )}
 
           {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>}

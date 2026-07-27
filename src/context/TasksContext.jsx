@@ -71,7 +71,7 @@ export function TasksProvider({ children }) {
   const deleteTask = useCallback(async (id) => {
     const { error: mutationError } = await supabase.from('tasks').delete().eq('id', id)
     if (mutationError) throw mutationError
-    setTasks((current) => current.filter((task) => task.id !== id))
+    setTasks((current) => current.filter((task) => task.id !== id && task.parent_id !== id))
   }, [])
 
   const value = useMemo(

@@ -3,7 +3,7 @@ import { formatDueDate, getDueGroup } from '../lib/dates'
 
 const TODO_ICONS = ['✦', '✓', '◌', '→']
 
-export default function TodoCard({ task, subtasks = [], index, onToggle, onDelete, onEdit }) {
+export default function TodoCard({ task, subtasks = [], index, onToggle, onToggleSubtask, onDelete, onEdit }) {
   const done = Boolean(task.done_at)
   const dueGroup = getDueGroup(task.due_date)
   const completedSubtasks = subtasks.filter((subtask) => subtask.done_at).length
@@ -88,7 +88,17 @@ export default function TodoCard({ task, subtasks = [], index, onToggle, onDelet
                 key={subtask.id}
                 className={`text-sm leading-5 ${subtask.done_at ? 'text-slate-400 line-through' : 'text-slate-600'}`}
               >
-                ☐ {subtask.content}
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onToggleSubtask?.(subtask)
+                  }}
+                  className="mr-1 align-middle text-slate-400 hover:text-indigo-500"
+                >
+                  {subtask.done_at ? '☑' : '☐'}
+                </button>
+                {subtask.content}
               </li>
             ))}
           </ul>

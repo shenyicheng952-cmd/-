@@ -74,6 +74,7 @@ export default function TaskList({ type }) {
                     subtasks={tasks.filter((item) => item.parent_id === task.id)}
                     index={index}
                     onToggle={(item) => handle(() => toggleTask(item))}
+                    onToggleSubtask={(sub) => handle(() => toggleTask(sub))}
                     onDelete={(id) => handle(() => deleteTask(id))}
                     onEdit={setEditingTask}
                   />

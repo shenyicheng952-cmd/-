@@ -13,6 +13,9 @@ const DOUYIN_SHARE_PATTERN = /[\d.]*\s*复制打开抖音[，,]\s*看看【[^】
 const XHS_SHARE_PATTERN = /[\d.]*\s*复制(?:本条|打开)小红书[，,]\s*看看【[^】]+】[的之]?笔记[，,]?\s*/u
 const SHARE_FRAGMENT_PATTERN = /[\d.]*\s*(?:复制打开|复制本条|打开APP|长按复制)[^。！？\n]*/giu
 const BARE_SHARE_CODE = /(?:^|\s)[A-Za-z]{2,6}:\/\S*(?=\s|$)/gu
+const SHARE_MARKER_PATTERN = /(?:复制(?:此|本条)?(?:链接)?(?:打开)?|打开|到)\s*(?:抖音|小红书|快手|微博)(?:app)?/iu
+const SHARE_TAIL_NOISE_PATTERN =
+  /(?:^|\s)(?:[#＃][^\s#＃]+|[A-Za-z0-9._-]*@[A-Za-z0-9._-]+|[A-Za-z0-9]{1,12}:\/+\S*|\d{1,2}\/\d{1,2}|:?\d{1,2}(?::\d{2})?(?:am|pm))(?!\p{Script=Han})/giu
 
 function trimUrl(url) {
   return url.replace(URL_TRAILING_PUNCTUATION, '')
@@ -91,8 +94,37 @@ export function cleanTaskContent(text) {
 }
 
 export function extractInspoContent(text) {
-  const url = detectSource(text).sourceUrl
-  const base = url ? text.replace(url, '').trim() : text.trim()
+  const original = text.trim()
+  const url = detectSource(original).sourceUrl
+  const base = url ? original.replace(url, ' ').trim() : original
+
+  // 平台分享文案通常是“完整标题 + 口令 + 链接 + 追踪码”，用户自己补的
+  // “二改 / 参考 / 选题”等备注才应该成为卡片标题。
+  if (SHARE_MARKER_PATTERN.test(original)) {
+    const markerIndex = original.search(SHARE_MARKER_PATTERN)
+    const urlIndex = url ? original.indexOf(url) : -1
+    const savedTailNote = original.match(
+      /(?:[A-Za-z0-9._-]*@[A-Za-z0-9._-]+|[A-Za-z]{2,12}:\/+\S*)\s+([\p{Script=Han}][^#＃\n]*)$/u,
+    )?.[1]?.trim()
+    const beforeShare = original
+      .slice(0, markerIndex)
+      .replace(/^[\d.\s]+|[，,。；;：:、\s]+$/gu, '')
+      .trim()
+    const afterUrl = urlIndex >= 0 ? original.slice(urlIndex + url.length) : ''
+    const personalNote = `${beforeShare} ${afterUrl}`
+      .replace(SHARE_CODE_PATTERN, ' ')
+      .replace(BARE_SHARE_CODE, ' ')
+      .replace(SHARE_TAIL_NOISE_PATTERN, ' ')
+      .replace(/\b\d{4,}\b/gu, ' ')
+      .replace(/[|｜]+/gu, ' ')
+      .replace(/\s{2,}/gu, ' ')
+      .replace(/^[，,。；;：:、/\\\s]+|[，,。；;：:、/\\\s]+$/gu, '')
+      .trim()
+
+    if (savedTailNote) return savedTailNote
+    if (personalNote) return personalNote
+  }
+
   const cleaned = base
     .replace(DOUYIN_SHARE_PATTERN, '')
     .replace(XHS_SHARE_PATTERN, '')

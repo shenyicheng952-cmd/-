@@ -179,7 +179,7 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
                 setText(value)
                 if (!task && !draftSubtasksTouched) setDraftSubtasks(splitTaskSteps(value, type))
               }}
-              placeholder={type === 'todo' ? '比如：7天后交房租' : '比如：下周五写 AI Agent 的 5 个改变'}
+              placeholder={type === 'todo' ? '比如：7天后交房租' : '粘贴分享文案和链接，再补一句“二改”或“参考”'}
               className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-[15px] leading-6 outline-none transition placeholder:text-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
             />
           </label>
@@ -191,8 +191,13 @@ export default function TaskModal({ open, type, initialText = '', task = null, o
           )}
 
           {type === 'inspo' && detectedSource.source && (
-            <div className="flex items-center gap-2 rounded-xl bg-violet-50 px-3 py-2.5 text-xs font-semibold text-violet-600">
-              <Sparkles size={15} /> 已识别来源：{SOURCE_LABELS[detectedSource.source]}
+            <div className="space-y-1 rounded-xl bg-violet-50 px-3 py-2.5 text-xs font-semibold text-violet-600">
+              <div className="flex items-center gap-2">
+                <Sparkles size={15} /> 已识别来源：{SOURCE_LABELS[detectedSource.source]}
+              </div>
+              {detectedSource.sourceUrl && (
+                <div className="truncate pl-[23px] font-medium text-blue-600">{detectedSource.sourceUrl}</div>
+              )}
             </div>
           )}
 

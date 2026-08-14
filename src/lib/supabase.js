@@ -7,7 +7,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 // on the site origin avoids a direct browser connection to supabase.co.
 const shouldUseNetlifyProxy =
   typeof window !== 'undefined' &&
-  (window.location.hostname.endsWith('.netlify.app') || import.meta.env.VITE_USE_SUPABASE_PROXY === 'true')
+  (window.location.hostname.endsWith('.netlify.app') ||
+    window.location.hostname.endsWith('.pages.dev') ||
+    import.meta.env.VITE_USE_SUPABASE_PROXY === 'true')
 
 const supabaseUrl = shouldUseNetlifyProxy
   ? new URL('/supabase', window.location.origin).toString().replace(/\/$/, '')

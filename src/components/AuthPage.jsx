@@ -18,12 +18,21 @@ export default function AuthPage() {
     }
     setBusy(true)
     setMessage(null)
-    const { data, error } = mode === 'signin' ? await signIn(email, password) : await signUp(email, password)
-    setBusy(false)
-    if (error) {
-      setMessage({ type: 'error', text: error.message })
-    } else if (mode === 'signup' && !data.session) {
-      setMessage({ type: 'success', text: '注册成功，请前往邮箱完成验证。' })
+    try {
+      const { data, error } = mode === 'signin' ? await signIn(email, password) : await signUp(email, password)
+      if (error) {
+        const isNetworkError = /failed to fetch|network/i.test(error.message)
+        setMessage({
+          type: 'error',
+          text: isNetworkError ? '暂时无法连接服务，请检查网络后重试。' : error.message,
+        })
+      } else if (mode === 'signup' && !data.session) {
+        setMessage({ type: 'success', text: '注册成功，请前往邮箱完成验证。' })
+      }
+    } catch {
+      setMessage({ type: 'error', text: '暂时无法连接服务，请检查网络后重试。' })
+    } finally {
+      setBusy(false)
     }
   }
 

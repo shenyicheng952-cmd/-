@@ -2,6 +2,14 @@
   command = "npm run build"
   publish = "dist"
 
+# Keep browser requests on the site's own origin. Some mobile networks cannot
+# reliably connect to Supabase directly, even when they can open this site.
+[[redirects]]
+  from = "/supabase/*"
+  to = "https://qzuhgflmtfzsoprevbwl.supabase.co/:splat"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
